@@ -6,11 +6,11 @@
   },
   "records": [
     {
-      "type": "A",
-      "name": "@",
-      "content": "136.243.156.121",
+      "type": "TXT",
+      "name": "alidnscheck",
+      "content": "82e3bd43ccd94b239578effed3cbeba8",
       "ttl": 3600,
-      "proxied": true
+      "proxied": false
     },
     {
       "type": "CNAME",
