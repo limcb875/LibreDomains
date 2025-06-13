@@ -6,18 +6,11 @@
   },
   "records": [
     {
-      "type": "A",
-      "name": "@",
-      "content": "185.199.108.153",
-      "ttl": 3600,
-      "proxied": true
-    },
-    {
       "type": "CNAME",
-      "name": "www",
-      "content": "justn-gpt.github.io",
+      "name": "hk",
+      "content": "libretv-a9l.pages.dev",
       "ttl": 3600,
-      "proxied": true
+      "proxied": false
     }
   ]
 }
