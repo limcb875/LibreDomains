@@ -432,7 +432,7 @@ function initSubdomainChecker() {
     // 验证子域名格式
     function validateSubdomain(subdomain) {
         if (!subdomain) return false;
-        if (subdomain.length < 2 || subdomain.length > 63) return false;
+        if (subdomain.length < 3 || subdomain.length > 63) return false;
         if (subdomain.startsWith('-') || subdomain.endsWith('-')) return false;
         if (!/^[a-z0-9-]+$/.test(subdomain)) return false;
         return true;
@@ -440,7 +440,7 @@ function initSubdomainChecker() {
 
     // 获取验证错误信息
     function getValidationMessage(subdomain) {
-        if (subdomain.length < 2) return '子域名长度至少2个字符';
+        if (subdomain.length < 3) return '子域名长度至少3个字符';
         if (subdomain.length > 63) return '子域名长度不能超过63个字符';
         if (subdomain.startsWith('-') || subdomain.endsWith('-')) return '子域名不能以连字符开头或结尾';
         if (!/^[a-z0-9-]+$/.test(subdomain)) return '只能包含小写字母、数字和连字符';

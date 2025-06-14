@@ -53,8 +53,10 @@ def is_valid_domain_name(domain_name: str) -> bool:
     if domain_name == '@':
         return True
     
-    # 修复：使用更严格的验证，确保大小写一致性
-    pattern = r'^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?$'
+    # 修复：使用更严格的验证，确保大小写一致性，最少3个字符
+    if len(domain_name) < 3:
+        return False
+    pattern = r'^[a-z0-9]([a-z0-9\-]{1,61}[a-z0-9])$'
     return bool(re.match(pattern, domain_name.lower()))
 
 
