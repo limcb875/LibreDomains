@@ -8,7 +8,7 @@
     {
       "type": "A",
       "name": "@",
-      "content": "xxx.xxx.xxx.xxx",
+      "content": "171.114.210.23",
       "ttl": 3600,
       "proxied": false
     },
