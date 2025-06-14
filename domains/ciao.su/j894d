@@ -1,21 +1,21 @@
 {
   "owner": {
-    "name": "geo",
-    "github": "jmttoki",
-    "email": "jmttoki@gmail.com"
+    "name": "hofccyf",
+    "github": "hofccyf",
+    "email": "hofccyf@outlook.com"
   },
   "records": [
     {
       "type": "A",
       "name": "@",
-      "content": "171.114.210.23",
+      "content": "185.199.108.153",
       "ttl": 3600,
       "proxied": false
     },
     {
       "type": "CNAME",
       "name": "www",
-      "content": "xxx.com",
+      "content": "hofccyf.github.io",
       "ttl": 3600,
       "proxied": false
     }
