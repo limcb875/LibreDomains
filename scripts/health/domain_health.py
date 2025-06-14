@@ -15,7 +15,7 @@ import time
 import datetime
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Any, Optional, Tuple
-
+import ipaddress
 import requests
 
 # 添加项目根目录到 Python 路径
@@ -121,6 +121,84 @@ def get_record_fqdn(domain: str, subdomain: str, record: Dict[str, Any]) -> str:
         return f"{name}.{subdomain}.{domain}"
 
 
+# Cloudflare IP 地址范围
+CLOUDFLARE_IPV4_RANGES = [
+    '103.21.244.0/22',
+    '103.22.200.0/22',
+    '103.31.4.0/22',
+    '104.16.0.0/13',
+    '104.24.0.0/14',
+    '108.162.192.0/18',
+    '131.0.72.0/22',
+    '141.101.64.0/18',
+    '162.158.0.0/15',
+    '172.64.0.0/13',
+    '173.245.48.0/20',
+    '188.114.96.0/20',
+    '190.93.240.0/20',
+    '197.234.240.0/22',
+    '198.41.128.0/17'
+]
+
+CLOUDFLARE_IPV6_RANGES = [
+    '2400:cb00::/32',
+    '2606:4700::/32',
+    '2803:f800::/32',
+    '2405:b500::/32',
+    '2405:8100::/32',
+    '2a06:98c0::/29',
+    '2c0f:f248::/32'
+]
+
+
+def is_cloudflare_ip(ip: str) -> bool:
+    """
+    检查 IP 地址是否属于 Cloudflare
+    
+    Args:
+        ip: IP 地址字符串
+    
+    Returns:
+        如果是 Cloudflare IP 则返回 True
+    """
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+        
+        # 检查 IPv4 范围
+        if ip_obj.version == 4:
+            for cidr in CLOUDFLARE_IPV4_RANGES:
+                if ip_obj in ipaddress.ip_network(cidr):
+                    return True
+        
+        # 检查 IPv6 范围
+        elif ip_obj.version == 6:
+            for cidr in CLOUDFLARE_IPV6_RANGES:
+                if ip_obj in ipaddress.ip_network(cidr):
+                    return True
+        
+        return False
+    except ValueError:
+        return False
+
+
+def resolve_cname_final(domain: str) -> str:
+    """
+    解析 CNAME 记录的最终目标域名
+    
+    Args:
+        domain: 域名
+    
+    Returns:
+        最终目标域名
+    """
+    try:
+        # 使用 socket.getfqdn 来获取完全限定域名
+        fqdn = socket.getfqdn(domain)
+        return fqdn
+    except Exception:
+        return domain
+
+
 def check_dns_record(domain: str, subdomain: str, record: Dict[str, Any]) -> Dict[str, Any]:
     """
     检查 DNS 记录的健康状态
@@ -136,6 +214,7 @@ def check_dns_record(domain: str, subdomain: str, record: Dict[str, Any]) -> Dic
     fqdn = get_record_fqdn(domain, subdomain, record)
     record_type = record.get('type')
     expected_content = record.get('content')
+    proxied = record.get('proxied', False)  # 是否使用 Cloudflare 代理
     
     result = {
         'fqdn': fqdn,
@@ -144,7 +223,8 @@ def check_dns_record(domain: str, subdomain: str, record: Dict[str, Any]) -> Dic
         'actual': None,
         'status': 'unknown',
         'error': None,
-        'latency': None
+        'latency': None,
+        'proxied': proxied
     }
     
     try:
@@ -155,26 +235,53 @@ def check_dns_record(domain: str, subdomain: str, record: Dict[str, Any]) -> Dic
             try:
                 answers = socket.gethostbyname_ex(fqdn)[2]
                 result['actual'] = answers
-                if expected_content in answers:
-                    result['status'] = 'ok'
+                
+                if proxied:
+                    # 如果使用了 Cloudflare 代理，检查是否返回 Cloudflare IP
+                    cloudflare_ips = [ip for ip in answers if is_cloudflare_ip(ip)]
+                    if cloudflare_ips:
+                        result['status'] = 'ok'
+                        result['actual'] = cloudflare_ips + [f"(代理: {len(cloudflare_ips)} Cloudflare IPs)"]
+                    else:
+                        # 仍然检查是否匹配预期值
+                        if expected_content in answers:
+                            result['status'] = 'ok'
+                        else:
+                            result['status'] = 'mismatch'
                 else:
-                    result['status'] = 'mismatch'
+                    # 不使用代理，直接比较
+                    if expected_content in answers:
+                        result['status'] = 'ok'
+                    else:
+                        result['status'] = 'mismatch'
             except socket.gaierror as e:
                 result['error'] = f"DNS 解析错误: {str(e)}"
                 result['status'] = 'error'
         
         elif record_type == 'AAAA':
             # IPv6 记录需要特殊处理
-            # 简化处理，仅检查记录是否存在
             try:
                 # 使用 socket.getaddrinfo 获取 IPv6 地址
                 infos = socket.getaddrinfo(fqdn, None, socket.AF_INET6)
                 ipv6_addresses = [info[4][0] for info in infos]
                 result['actual'] = ipv6_addresses
-                if ipv6_addresses:
-                    result['status'] = 'ok'
+                
+                if proxied:
+                    # 如果使用了 Cloudflare 代理，检查是否返回 Cloudflare IPv6
+                    cloudflare_ips = [ip for ip in ipv6_addresses if is_cloudflare_ip(ip)]
+                    if cloudflare_ips:
+                        result['status'] = 'ok'
+                        result['actual'] = cloudflare_ips + [f"(代理: {len(cloudflare_ips)} Cloudflare IPv6s)"]
+                    else:
+                        if expected_content in ipv6_addresses:
+                            result['status'] = 'ok'
+                        else:
+                            result['status'] = 'mismatch'
                 else:
-                    result['status'] = 'mismatch'
+                    if expected_content in ipv6_addresses:
+                        result['status'] = 'ok'
+                    else:
+                        result['status'] = 'mismatch'
             except socket.gaierror as e:
                 result['error'] = f"DNS 解析错误: {str(e)}"
                 result['status'] = 'error'
@@ -182,34 +289,67 @@ def check_dns_record(domain: str, subdomain: str, record: Dict[str, Any]) -> Dic
         elif record_type == 'CNAME':
             # 检查 CNAME 记录
             try:
-                cname = socket.gethostbyname_ex(fqdn)[0]
-                result['actual'] = cname
-                # 简化比较，不考虑尾部的点
-                expected = expected_content[:-1] if expected_content.endswith('.') else expected_content
-                actual = cname[:-1] if cname.endswith('.') else cname
-                
-                if expected in actual:
-                    result['status'] = 'ok'
+                if proxied:
+                    # 如果使用了 Cloudflare 代理，检查最终解析结果
+                    final_domain = resolve_cname_final(fqdn)
+                    result['actual'] = final_domain
+                    
+                    # 检查是否能解析到 IP（表示 CNAME 工作正常）
+                    try:
+                        ips = socket.gethostbyname_ex(fqdn)[2]
+                        cloudflare_ips = [ip for ip in ips if is_cloudflare_ip(ip)]
+                        if cloudflare_ips:
+                            result['status'] = 'ok'
+                            result['actual'] = [final_domain, f"(代理: {len(cloudflare_ips)} Cloudflare IPs)"]
+                        else:
+                            result['status'] = 'ok'  # 能解析就认为是正常的
+                    except socket.gaierror:
+                        result['status'] = 'mismatch'
                 else:
-                    result['status'] = 'mismatch'
+                    # 不使用代理，直接比较 CNAME
+                    cname = socket.gethostbyname_ex(fqdn)[0]
+                    result['actual'] = cname
+                    
+                    # 简化比较，不考虑尾部的点
+                    expected = expected_content[:-1] if expected_content.endswith('.') else expected_content
+                    actual = cname[:-1] if cname.endswith('.') else cname
+                    
+                    if expected in actual or actual in expected:
+                        result['status'] = 'ok'
+                    else:
+                        result['status'] = 'mismatch'
             except socket.gaierror as e:
                 result['error'] = f"DNS 解析错误: {str(e)}"
                 result['status'] = 'error'
         
         elif record_type == 'TXT':
-            # TXT 记录通常用于验证域名所有权，这里简化处理
-            result['status'] = 'unchecked'
-            result['error'] = "TXT 记录健康检查未实现"
+            # TXT 记录通常用于验证域名所有权
+            try:
+                import subprocess
+                result_cmd = subprocess.run(['nslookup', '-type=TXT', fqdn], 
+                                          capture_output=True, text=True, timeout=10)
+                if result_cmd.returncode == 0:
+                    output = result_cmd.stdout
+                    result['actual'] = ['TXT records found']
+                    if expected_content.lower() in output.lower():
+                        result['status'] = 'ok'
+                    else:
+                        result['status'] = 'mismatch'
+                        result['actual'] = [f"TXT found but not matching: {expected_content}"]
+                else:
+                    result['status'] = 'error'
+                    result['error'] = f"TXT 记录查询失败: {result_cmd.stderr}"
+            except Exception as e:
+                result['error'] = f"TXT 记录检查错误: {str(e)}"
+                result['status'] = 'error'
         
         elif record_type == 'MX':
             # 检查 MX 记录
             try:
-                # 使用标准库而不是 dns.resolver
                 import subprocess
                 result_cmd = subprocess.run(['nslookup', '-type=MX', fqdn], 
                                           capture_output=True, text=True, timeout=10)
                 if result_cmd.returncode == 0:
-                    # 简化处理，只检查是否有 MX 记录返回
                     output = result_cmd.stdout.lower()
                     if 'mail exchanger' in output or expected_content.lower() in output:
                         result['status'] = 'ok'
@@ -235,14 +375,14 @@ def check_dns_record(domain: str, subdomain: str, record: Dict[str, Any]) -> Dic
                 
                 # 首先尝试 HTTPS
                 try:
-                    https_response = requests.get(https_url, timeout=5)
+                    https_response = requests.get(https_url, timeout=5, allow_redirects=True)
                     result['http_status'] = https_response.status_code
                     result['http_latency'] = https_response.elapsed.total_seconds() * 1000
                     result['http_url'] = https_url
                 except requests.exceptions.RequestException:
                     # 如果 HTTPS 失败，尝试 HTTP
                     try:
-                        http_response = requests.get(http_url, timeout=5)
+                        http_response = requests.get(http_url, timeout=5, allow_redirects=True)
                         result['http_status'] = http_response.status_code
                         result['http_latency'] = http_response.elapsed.total_seconds() * 1000
                         result['http_url'] = http_url
@@ -567,13 +707,19 @@ def print_health_summary(results: List[Dict[str, Any]], config: Dict[str, Any]):
             for record in mismatched_records:
                 expected = record.get('expected', 'Unknown')
                 actual = record.get('actual')
+                proxied = record.get('proxied', False)
+                
                 if isinstance(actual, list):
                     actual = ', '.join(str(a) for a in actual) if actual else '无'
                 elif actual is None:
                     actual = '无'
-                print(f"    └─ {record.get('fqdn', 'Unknown')}: 预期 {expected}, 实际 {actual}")
+                
+                proxy_note = " (Cloudflare 代理)" if proxied else ""
+                print(f"    └─ {record.get('fqdn', 'Unknown')}: 预期 {expected}, 实际 {actual}{proxy_note}")
         
         print("-" * 80)
+        print("💡 提示: 如果使用了 Cloudflare 代理，请在配置文件中添加 'proxied': true")
+        print("💡 Cloudflare 代理会返回 Cloudflare 的 IP 地址，这是正常现象")
     else:
         print("🎉 所有域名状态健康!")
     
