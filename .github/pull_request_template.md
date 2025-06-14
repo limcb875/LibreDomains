@@ -13,7 +13,6 @@
 <!-- 请确认以下事项，并在方括号中填入 "x" 来选中 -->
 
 - [ ] 我已阅读并同意[服务条款](https://github.com/bestzwei/LibreDomains/blob/main/docs/terms-of-service.md)
-- [ ] 我已阅读并理解了用户指南和规则
 - [ ] 我的子域名符合命名规则（不含特殊字符，长度适当）
 - [ ] 我的 JSON 文件格式正确
 - [ ] 我确认申请的子域名未被占用
