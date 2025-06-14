@@ -483,16 +483,130 @@ def generate_health_report(results: List[Dict[str, Any]], config: Dict[str, Any]
     return "\n".join(report)
 
 
+def print_health_summary(results: List[Dict[str, Any]], config: Dict[str, Any]):
+    """
+    在控制台输出健康状态摘要
+    
+    Args:
+        results: 健康状态结果列表
+        config: 项目配置
+    """
+    # 统计数据
+    total_domains = len(results)
+    if total_domains == 0:
+        print("📊 没有找到任何域名配置文件")
+        return
+    
+    status_counts = {
+        'healthy': len([r for r in results if r['status'] == 'healthy']),
+        'partial': len([r for r in results if r['status'] == 'partial']),
+        'degraded': len([r for r in results if r['status'] == 'degraded']),
+        'mismatch': len([r for r in results if r['status'] == 'mismatch']),
+        'unhealthy': len([r for r in results if r['status'] == 'unhealthy']),
+        'unknown': len([r for r in results if r['status'] == 'unknown']),
+    }
+    
+    # 打印统计摘要
+    print("\n" + "="*60)
+    print("📊 域名健康状态报告")
+    print("="*60)
+    print(f"⏰ 检查时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"📈 总域名数: {total_domains}")
+    print()
+    
+    # 状态统计
+    print("📋 状态统计:")
+    print(f"  ✅ 健康:        {status_counts['healthy']:3d} ({round(status_counts['healthy']/total_domains*100, 1):5.1f}%)")
+    print(f"  ⚠️ 部分健康:    {status_counts['partial']:3d} ({round(status_counts['partial']/total_domains*100, 1):5.1f}%)")
+    print(f"  🔸 性能下降:    {status_counts['degraded']:3d} ({round(status_counts['degraded']/total_domains*100, 1):5.1f}%)")
+    print(f"  ⚡ 配置不匹配:  {status_counts['mismatch']:3d} ({round(status_counts['mismatch']/total_domains*100, 1):5.1f}%)")
+    print(f"  ❌ 不健康:      {status_counts['unhealthy']:3d} ({round(status_counts['unhealthy']/total_domains*100, 1):5.1f}%)")
+    print(f"  ❓ 未知:        {status_counts['unknown']:3d} ({round(status_counts['unknown']/total_domains*100, 1):5.1f}%)")
+    print()
+    
+    # 按域名分组显示详细信息
+    domains = {}
+    for result in results:
+        domain = result['domain']
+        if domain not in domains:
+            domains[domain] = []
+        domains[domain].append(result)
+    
+    # 显示有问题的域名
+    problem_results = [r for r in results if r['status'] != 'healthy']
+    if problem_results:
+        print("⚠️ 需要关注的域名:")
+        print("-" * 80)
+        
+        for result in problem_results:
+            domain = result['domain']
+            subdomain = result['subdomain']
+            status = result['status']
+            owner = result['owner'].get('name', '未知') if result['owner'] else '未知'
+            errors_count = result['errors']
+            
+            # 状态图标
+            status_icon = {
+                'partial': '⚠️',
+                'degraded': '🔸',
+                'mismatch': '⚡',
+                'unhealthy': '❌',
+                'unknown': '❓'
+            }.get(status, '❓')
+            
+            fqdn = f"{subdomain}.{domain}" if subdomain != '@' else domain
+            print(f"{status_icon} {fqdn:<30} | 状态: {status:<10} | 所有者: {owner:<15} | 错误: {errors_count}")
+            
+            # 显示错误详情
+            for record in result['records']:
+                if record.get('error'):
+                    print(f"    └─ {record.get('fqdn', 'Unknown')}: {record['error']}")
+            
+            # 显示不匹配的记录
+            mismatched_records = [r for r in result['records'] if r.get('status') == 'mismatch']
+            for record in mismatched_records:
+                expected = record.get('expected', 'Unknown')
+                actual = record.get('actual')
+                if isinstance(actual, list):
+                    actual = ', '.join(str(a) for a in actual) if actual else '无'
+                elif actual is None:
+                    actual = '无'
+                print(f"    └─ {record.get('fqdn', 'Unknown')}: 预期 {expected}, 实际 {actual}")
+        
+        print("-" * 80)
+    else:
+        print("🎉 所有域名状态健康!")
+    
+    # 显示性能统计
+    all_latencies = []
+    for result in results:
+        for record in result['records']:
+            if record.get('latency') is not None:
+                all_latencies.append(record['latency'])
+    
+    if all_latencies:
+        avg_latency = sum(all_latencies) / len(all_latencies)
+        max_latency = max(all_latencies)
+        min_latency = min(all_latencies)
+        print(f"\n⏱️ DNS 解析性能:")
+        print(f"  平均延迟: {avg_latency:.1f}ms")
+        print(f"  最大延迟: {max_latency}ms")
+        print(f"  最小延迟: {min_latency}ms")
+    
+    print("="*60)
+
+
 def main():
     """命令行入口点"""
     import argparse
     
     parser = argparse.ArgumentParser(description='域名健康检查工具')
     parser.add_argument('--config', help='配置文件路径')
-    parser.add_argument('--output', help='输出文件路径')
+    parser.add_argument('--output', help='输出文件路径 (可选，用于生成 Markdown 报告)')
     parser.add_argument('--timeout', type=int, default=10, help='检查超时时间 (秒)')
     parser.add_argument('--domain', help='指定要检查的域名')
     parser.add_argument('--subdomain', help='指定要检查的子域名')
+    parser.add_argument('--summary-only', action='store_true', help='只显示摘要信息')
     
     args = parser.parse_args()
     
@@ -513,7 +627,8 @@ def main():
         if args.domain and args.domain != domain:
             continue
         
-        print(f"检查域名: {domain}")
+        if not args.summary_only:
+            print(f"🔍 检查域名: {domain}")
         
         # 获取域名目录下的所有 JSON 文件
         domain_files = get_domain_files(domain)
@@ -525,12 +640,13 @@ def main():
             if args.subdomain and args.subdomain != subdomain:
                 continue
                 
-            print(f"  检查子域名: {subdomain}")
+            if not args.summary_only:
+                print(f"  📋 检查子域名: {subdomain}")
             
             # 加载子域名配置
             domain_config = load_domain_config(file_path)
             if domain_config is None:
-                print(f"    无法加载配置文件: {file_path}")
+                print(f"    ❌ 无法加载配置文件: {file_path}")
                 continue
             
             # 检查健康状态
@@ -538,26 +654,26 @@ def main():
             all_results.append(result)
             
             # 打印结果状态
-            status_icon = {
-                'healthy': '✓',
-                'partial': '⚠',
-                'degraded': '!',
-                'mismatch': '≠',
-                'unhealthy': '✗',
-                'unknown': '?'
-            }.get(result['status'], '?')
-            print(f"    状态: {status_icon} {result['status']}")
+            if not args.summary_only:
+                status_icon = {
+                    'healthy': '✅',
+                    'partial': '⚠️',
+                    'degraded': '🔸',
+                    'mismatch': '⚡',
+                    'unhealthy': '❌',
+                    'unknown': '❓'
+                }.get(result['status'], '❓')
+                print(f"    {status_icon} 状态: {result['status']}")
     
-    # 生成报告
-    report = generate_health_report(all_results, config)
+    # 显示摘要
+    print_health_summary(all_results, config)
     
-    # 输出报告
+    # 如果指定了输出文件，生成 Markdown 报告
     if args.output:
+        report = generate_health_report(all_results, config)
         with open(args.output, 'w', encoding='utf-8') as f:
             f.write(report)
-        print(f"\n报告已保存至: {args.output}")
-    else:
-        print("\n" + report)
+        print(f"\n📄 详细报告已保存至: {args.output}")
     
     # 返回码: 如果有任何不健康的域名，返回 1
     unhealthy_count = len([r for r in all_results if r['status'] in ['unhealthy', 'mismatch']])
