@@ -26,10 +26,15 @@ jobs:
         
       - name: 运行健康检查
         run: |
+          # 设置 Python 路径以便正确导入模块
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
           python scripts/health/domain_health.py --output health_report.md
           
       - name: 更新健康报告
         run: |
+          # 确保 docs 目录存在
+          mkdir -p docs
+          
           # 将报告复制到 docs 目录
           cp health_report.md docs/health_report.md
           

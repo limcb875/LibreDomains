@@ -17,10 +17,26 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Any, Optional, Tuple
 
 import requests
-from scripts.utils.common import load_json_file
 
 # 添加项目根目录到 Python 路径
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.insert(0, project_root)
+
+try:
+    from scripts.utils.common import load_json_file
+except ImportError:
+    # 如果导入失败，使用内联版本
+    def load_json_file(file_path: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f), None
+        except json.JSONDecodeError as e:
+            error_msg = f"JSON 格式错误: {str(e)}"
+            return None, error_msg
+        except FileNotFoundError:
+            return None, f"文件不存在: {file_path}"
+        except Exception as e:
+            return None, f"读取文件错误: {str(e)}"
 
 
 def load_config(config_path: str = None) -> Dict[str, Any]:
