@@ -39,13 +39,14 @@ jobs:
         if: steps.changed-files.outputs.all_changed_files != ''
         run: |
           echo "=== 预检查文件格式 ==="
-          echo "更改的文件: ${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "📍 仓库: ${{ github.repository }}"
+          echo "📝 更改的文件: ${{ steps.changed-files.outputs.all_changed_files }}"
           echo ""
           
           HAS_INVALID_FILES=false
           
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "检查文件: $file"
+            echo "🔍 检查文件: $file"
             
             # 检查文件是否在正确的目录结构中
             if [[ ! "$file" =~ ^domains/[^/]+/[^/]+\.json$ ]]; then
@@ -100,10 +101,11 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           
           echo "=== 开始验证域名配置 ==="
-          echo "更改的文件: ${{ steps.changed-files.outputs.all_changed_files }}"
-          echo "PR作者: ${{ github.event.pull_request.user.login }}"
-          echo "检查保留子域名: 启用"
-          echo "检查文件格式: 启用"
+          echo "📝 更改的文件: ${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "👤 PR作者: ${{ github.event.pull_request.user.login }}"
+          echo "🔒 检查保留子域名: 启用"
+          echo "📋 检查文件格式: 启用"
+          echo "🏠 目标仓库: ${{ github.repository }}"
           echo ""
           
           # 运行验证脚本并直接输出到控制台，包含所有权验证和保留子域名检查

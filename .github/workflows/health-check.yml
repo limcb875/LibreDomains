@@ -7,6 +7,8 @@ on:
 
 jobs:
   health-check:
+    # 添加仓库检查，确保只在主仓库运行
+    if: github.repository == 'bestzwei/LibreDomains'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,6 +34,7 @@ jobs:
           echo "🚀 开始域名健康检查..."
           echo "📅 检查时间: $(date '+%Y-%m-%d %H:%M:%S UTC')"
           echo "🔧 触发方式: ${{ github.event_name }}"
+          echo "📍 仓库: ${{ github.repository }}"
           echo ""
           
           # 运行健康检查，只显示摘要信息
@@ -61,3 +64,11 @@ jobs:
           echo "  1. 检查域名配置文件"
           echo "  2. 验证 DNS 记录设置"
           echo "  3. 手动运行健康检查脚本进行调试"
+          
+      - name: Fork 仓库提示
+        if: github.repository != 'bestzwei/LibreDomains'
+        run: |
+          echo "ℹ️ 此工作流仅在主仓库 bestzwei/LibreDomains 中运行"
+          echo "📝 Fork 仓库无需运行域名健康检查"
+          echo "🔍 如需测试域名配置，请使用验证脚本："
+          echo "   python scripts/health/domain_health.py --help"
