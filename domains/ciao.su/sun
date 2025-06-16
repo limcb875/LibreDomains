@@ -1,4 +1,5 @@
 {
+  "description": "个人博客网站",
   "owner": {
     "name": "soleil",
     "github": "H-Soleil",
@@ -8,14 +9,7 @@
     {
       "type": "A",
       "name": "@",
-      "content": "185.199.108.153",
-      "ttl": 3600,
-      "proxied": false
-    },
-    {
-      "type": "CNAME",
-      "name": "www",
-      "content": "H-Soleil.github.io",
+      "content": "36.45.113.240",
       "ttl": 3600,
       "proxied": false
     }
