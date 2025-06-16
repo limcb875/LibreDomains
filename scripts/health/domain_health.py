@@ -542,8 +542,8 @@ def generate_health_report(results: List[Dict[str, Any]], config: Dict[str, Any]
         report.append("")
         
         # 创建子域名表格
-        report.append("| 子域名 | 状态 | 所有者 | 记录数 | 错误数 | 检查时间 |")
-        report.append("|--------|------|-------|--------|--------|----------|")
+        report.append("| 子域名 | 状态 | 描述 | 所有者 | 记录数 | 错误数 | 检查时间 |")
+        report.append("|--------|------|------|-------|--------|--------|----------|")
         
         # 按状态排序: 不健康优先显示
         domain_results.sort(key=lambda r: {
@@ -558,6 +558,16 @@ def generate_health_report(results: List[Dict[str, Any]], config: Dict[str, Any]
         for result in domain_results:
             subdomain = result['subdomain']
             status = result['status']
+            # 获取子域名描述
+            subdomain_desc = '无'
+            try:
+                # 这里需要额外加载子域名配置来获取描述
+                subdomain_config = load_domain_config(os.path.join(os.path.dirname(__file__), '../../domains', domain, f"{subdomain}.json"))
+                if subdomain_config:
+                    subdomain_desc = subdomain_config.get('description', '无')[:30] + ('...' if len(subdomain_config.get('description', '')) > 30 else '')
+            except:
+                pass
+            
             owner = result['owner'].get('name', '未知') if result['owner'] else '未知'
             records_count = len(result['records'])
             errors_count = result['errors']
@@ -573,9 +583,7 @@ def generate_health_report(results: List[Dict[str, Any]], config: Dict[str, Any]
                 'unknown': '❓'
             }.get(status, '❓')
             
-            report.append(f"| {subdomain} | {status_icon} {status} | {owner} | {records_count} | {errors_count} | {check_time} |")
-        
-        report.append("")
+            report.append(f"| {subdomain} | {status_icon} {status} | {subdomain_desc} | {owner} | {records_count} | {errors_count} | {check_time} |")
         
         # 详细记录信息
         for result in domain_results:

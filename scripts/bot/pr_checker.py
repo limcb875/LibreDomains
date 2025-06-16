@@ -217,6 +217,7 @@ def format_validation_result(results: Dict[str, List[str]]) -> str:
         markdown.append("### 配置示例")
         markdown.append("```json")
         markdown.append("{")
+        markdown.append('  "description": "个人博客网站",')
         markdown.append('  "owner": {')
         markdown.append('    "name": "你的名字",')
         markdown.append('    "github": "你的GitHub用户名",')

@@ -217,6 +217,18 @@ def validate_domain_config(file_path: str, config: Optional[Dict[str, Any]] = No
     if error:
         return False, [error]
     
+    # 检查 description 部分
+    if 'description' not in domain_config:
+        errors.append("缺少 'description' 字段，请添加对子域名用途的描述")
+    else:
+        description = domain_config['description']
+        if not isinstance(description, str):
+            errors.append("'description' 字段必须是字符串类型")
+        elif len(description.strip()) < 5:
+            errors.append("'description' 字段至少需要5个字符，请提供有意义的描述")
+        elif len(description) > 200:
+            errors.append("'description' 字段不能超过200个字符")
+    
     # 检查 owner 部分
     if 'owner' not in domain_config:
         errors.append("缺少 'owner' 部分")
