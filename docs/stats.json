@@ -1,9 +1,9 @@
 {
   "total_domains": 2,
   "enabled_domains": 2,
-  "total_subdomains": 18,
+  "total_subdomains": 23,
   "subdomains_by_domain": {
-    "ciao.su": 18,
+    "ciao.su": 23,
     "ciallo.de": 0
   },
   "users": {
@@ -14,8 +14,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "neo",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -26,8 +26,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "0-0",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -38,20 +38,20 @@
         {
           "domain": "ciao.su",
           "subdomain": "oo",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "xx",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "nezha",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -62,8 +62,32 @@
         {
           "domain": "ciao.su",
           "subdomain": "cug",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
+        }
+      ]
+    },
+    "00ye": {
+      "name": "linwhite",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "lin",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
+        }
+      ]
+    },
+    "Yeqingky": {
+      "name": "夜轻",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "yeqing",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -74,14 +98,14 @@
         {
           "domain": "ciao.su",
           "subdomain": "meeting",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "test1",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -92,20 +116,20 @@
         {
           "domain": "ciao.su",
           "subdomain": "ok",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "ju",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "gpt",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -116,8 +140,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "cxk",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -128,8 +152,20 @@
         {
           "domain": "ciao.su",
           "subdomain": "chenyi",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
+        }
+      ]
+    },
+    "mordo-alex": {
+      "name": "mordo",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "armbian",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -140,8 +176,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "bb",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -152,8 +188,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "tv",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -164,8 +200,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "alist",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -176,8 +212,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "cc",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -188,15 +224,39 @@
         {
           "domain": "ciao.su",
           "subdomain": "mine",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
+        }
+      ]
+    },
+    "hofccyf": {
+      "name": "hofccyf",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "j894d",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
+        }
+      ]
+    },
+    "H-Soleil": {
+      "name": "soleil",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "sun",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     }
   },
   "record_types": {
-    "CNAME": 18,
-    "A": 5,
+    "CNAME": 25,
+    "A": 8,
     "TXT": 1
   },
   "top_users": [
@@ -208,20 +268,20 @@
         {
           "domain": "ciao.su",
           "subdomain": "oo",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "xx",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "nezha",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -233,20 +293,20 @@
         {
           "domain": "ciao.su",
           "subdomain": "ok",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "ju",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "gpt",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -258,14 +318,14 @@
         {
           "domain": "ciao.su",
           "subdomain": "meeting",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         },
         {
           "domain": "ciao.su",
           "subdomain": "test1",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -277,8 +337,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "neo",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -290,8 +350,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "0-0",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -303,8 +363,34 @@
         {
           "domain": "ciao.su",
           "subdomain": "cug",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
+        }
+      ]
+    },
+    {
+      "username": "00ye",
+      "name": "linwhite",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "lin",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
+        }
+      ]
+    },
+    {
+      "username": "Yeqingky",
+      "name": "夜轻",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "yeqing",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -316,8 +402,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "cxk",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -329,8 +415,21 @@
         {
           "domain": "ciao.su",
           "subdomain": "chenyi",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
+        }
+      ]
+    },
+    {
+      "username": "mordo-alex",
+      "name": "mordo",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "armbian",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -342,8 +441,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "bb",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -355,8 +454,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "tv",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     },
@@ -368,8 +467,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "alist",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -381,8 +480,8 @@
         {
           "domain": "ciao.su",
           "subdomain": "cc",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9012616
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7076476
         }
       ]
     },
@@ -394,8 +493,34 @@
         {
           "domain": "ciao.su",
           "subdomain": "mine",
-          "added_time": "2025-06-15 01:52:19",
-          "timestamp": 1749952339.9022615
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
+        }
+      ]
+    },
+    {
+      "username": "hofccyf",
+      "name": "hofccyf",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "j894d",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
+        }
+      ]
+    },
+    {
+      "username": "H-Soleil",
+      "name": "soleil",
+      "count": 1,
+      "domains": [
+        {
+          "domain": "ciao.su",
+          "subdomain": "sun",
+          "added_time": "2025-06-22 01:51:31",
+          "timestamp": 1750557091.7086477
         }
       ]
     }
@@ -407,8 +532,8 @@
       "full_domain": "neo.ciao.su",
       "owner": "William Wu",
       "github": "Neomanbeta",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
@@ -416,8 +541,26 @@
       "full_domain": "oo.ciao.su",
       "owner": "oyz",
       "github": "boosoyz",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "lin",
+      "full_domain": "lin.ciao.su",
+      "owner": "linwhite",
+      "github": "00ye",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "yeqing",
+      "full_domain": "yeqing.ciao.su",
+      "owner": "夜轻",
+      "github": "Yeqingky",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
@@ -425,8 +568,8 @@
       "full_domain": "meeting.ciao.su",
       "owner": "tsengvee",
       "github": "tsengvee",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
@@ -434,80 +577,8 @@
       "full_domain": "ok.ciao.su",
       "owner": "JUJU",
       "github": "justn-gpt",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "ju",
-      "full_domain": "ju.ciao.su",
-      "owner": "JUJU",
-      "github": "justn-gpt",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "xx",
-      "full_domain": "xx.ciao.su",
-      "owner": "oyz",
-      "github": "boosoyz",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "nezha",
-      "full_domain": "nezha.ciao.su",
-      "owner": "oyz",
-      "github": "boosoyz",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "test1",
-      "full_domain": "test1.ciao.su",
-      "owner": "tsengvee",
-      "github": "tsengvee",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "tv",
-      "full_domain": "tv.ciao.su",
-      "owner": "Zwei",
-      "github": "bestZwei",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "mine",
-      "full_domain": "mine.ciao.su",
-      "owner": "神乐",
-      "github": "orangelightyo",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9022615
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "0-0",
-      "full_domain": "0-0.ciao.su",
-      "owner": "tmw",
-      "github": "dsblkkk",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
-    },
-    {
-      "domain": "ciao.su",
-      "subdomain": "cug",
-      "full_domain": "cug.ciao.su",
-      "owner": "Marjorie",
-      "github": "heyueshisan",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
@@ -515,44 +586,71 @@
       "full_domain": "cxk.ciao.su",
       "owner": "DazzleJ",
       "github": "Derduan",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
-      "subdomain": "chenyi",
-      "full_domain": "chenyi.ciao.su",
-      "owner": "131129",
-      "github": "qweaszq123",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
+      "subdomain": "ju",
+      "full_domain": "ju.ciao.su",
+      "owner": "JUJU",
+      "github": "justn-gpt",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
-      "subdomain": "bb",
-      "full_domain": "bb.ciao.su",
-      "owner": "Bian",
-      "github": "Biiian",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
+      "subdomain": "xx",
+      "full_domain": "xx.ciao.su",
+      "owner": "oyz",
+      "github": "boosoyz",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
-      "subdomain": "alist",
-      "full_domain": "alist.ciao.su",
-      "owner": "mc838",
-      "github": "vipmc838",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
+      "subdomain": "nezha",
+      "full_domain": "nezha.ciao.su",
+      "owner": "oyz",
+      "github": "boosoyz",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
-      "subdomain": "cc",
-      "full_domain": "cc.ciao.su",
-      "owner": "ifx1",
-      "github": "ifx1",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
+      "subdomain": "test1",
+      "full_domain": "test1.ciao.su",
+      "owner": "tsengvee",
+      "github": "tsengvee",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "tv",
+      "full_domain": "tv.ciao.su",
+      "owner": "Zwei",
+      "github": "bestZwei",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "mine",
+      "full_domain": "mine.ciao.su",
+      "owner": "神乐",
+      "github": "orangelightyo",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "j894d",
+      "full_domain": "j894d.ciao.su",
+      "owner": "hofccyf",
+      "github": "hofccyf",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
     },
     {
       "domain": "ciao.su",
@@ -560,8 +658,53 @@
       "full_domain": "gpt.ciao.su",
       "owner": "JUJU",
       "github": "justn-gpt",
-      "added_time": "2025-06-15 01:52:19",
-      "timestamp": 1749952339.9012616
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "sun",
+      "full_domain": "sun.ciao.su",
+      "owner": "soleil",
+      "github": "H-Soleil",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7086477
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "0-0",
+      "full_domain": "0-0.ciao.su",
+      "owner": "tmw",
+      "github": "dsblkkk",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7076476
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "cug",
+      "full_domain": "cug.ciao.su",
+      "owner": "Marjorie",
+      "github": "heyueshisan",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7076476
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "chenyi",
+      "full_domain": "chenyi.ciao.su",
+      "owner": "131129",
+      "github": "qweaszq123",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7076476
+    },
+    {
+      "domain": "ciao.su",
+      "subdomain": "armbian",
+      "full_domain": "armbian.ciao.su",
+      "owner": "mordo",
+      "github": "mordo-alex",
+      "added_time": "2025-06-22 01:51:31",
+      "timestamp": 1750557091.7076476
     }
   ]
 }
