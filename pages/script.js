@@ -319,6 +319,85 @@ document.addEventListener('DOMContentLoaded', function() {
     initSubdomainChecker();
 });
 
+// 全局域名配置（移到函数外部，避免变量初始化问题）
+const domainConfig = {
+    'ciao.su': { enabled: true, path: 'ciao.su' },
+    'ciallo.de': { enabled: false, path: 'ciallo.de' }
+};
+
+// 显示全部DNS记录（全局函数）
+function showAllRecords(event) {
+    event.preventDefault();
+    const recordsList = document.getElementById('recordsList');
+    const allRecordsData = recordsList.getAttribute('data-all-records');
+    
+    if (!allRecordsData) return;
+    
+    try {
+        const allRecords = JSON.parse(allRecordsData);
+        const recordsHtml = allRecords.map(record => `
+            <div class="dns-record">
+                <div class="record-type ${record.type}">${record.type}</div>
+                <div class="record-name">${record.name || '@'}</div>
+                <div class="record-content">${record.content}</div>
+                <div class="record-ttl">${record.ttl || 3600}s</div>
+            </div>
+        `).join('');
+        
+        recordsList.innerHTML = recordsHtml + `
+            <div class="collapse-records-info">
+                <button class="collapse-records-btn" onclick="collapseRecords(event)">
+                    收起记录列表
+                </button>
+            </div>
+        `;
+    } catch (error) {
+        console.error('解析DNS记录数据失败:', error);
+    }
+}
+
+// 收起DNS记录列表（全局函数）
+function collapseRecords(event) {
+    event.preventDefault();
+    const recordsList = document.getElementById('recordsList');
+    const allRecordsData = recordsList.getAttribute('data-all-records');
+    
+    if (!allRecordsData) return;
+    
+    try {
+        const allRecords = JSON.parse(allRecordsData);
+        const maxDisplayRecords = 5;
+        const totalRecords = allRecords.length;
+        const displayRecords = allRecords.slice(0, maxDisplayRecords);
+        
+        let recordsHtml = displayRecords.map(record => `
+            <div class="dns-record">
+                <div class="record-type ${record.type}">${record.type}</div>
+                <div class="record-name">${record.name || '@'}</div>
+                <div class="record-content">${record.content}</div>
+                <div class="record-ttl">${record.ttl || 3600}s</div>
+            </div>
+        `).join('');
+        
+        if (totalRecords > maxDisplayRecords) {
+            recordsHtml += `
+                <div class="more-records-info">
+                    <span class="more-records-text">
+                        还有 ${totalRecords - maxDisplayRecords} 条记录未显示
+                    </span>
+                    <button class="show-all-records-btn" onclick="showAllRecords(event)">
+                        显示全部 ${totalRecords} 条记录
+                    </button>
+                </div>
+            `;
+        }
+        
+        recordsList.innerHTML = recordsHtml;
+    } catch (error) {
+        console.error('恢复DNS记录显示失败:', error);
+    }
+}
+
 // 子域名检测功能
 function initSubdomainChecker() {
     const subdomainInput = document.getElementById('subdomainInput');
@@ -337,12 +416,6 @@ function initSubdomainChecker() {
         'demo', 'blog', 'forum', 'wiki', 'docs', 'tv',
         'app', 'mobile', 'static', 'assets'
     ]);
-
-    // 域名配置
-    const domainConfig = {
-        'ciao.su': { enabled: true, path: 'ciao.su' },
-        'ciallo.de': { enabled: false, path: 'ciallo.de' }
-    };
 
     // 检查是否支持必要的 API
     if (!window.fetch) {
@@ -494,9 +567,7 @@ function initSubdomainChecker() {
                 checkButton.textContent = '检测';
             }, 500);
         }
-    }
-
-    // 获取域名详细信息
+    }    // 获取域名详细信息
     async function getDomainDetails(subdomain, domain) {
         try {
             const domainPath = domainConfig[domain]?.path || domain;
@@ -512,16 +583,33 @@ function initSubdomainChecker() {
             });
             
             if (!response.ok) {
+                console.warn(`GitHub API failed for ${subdomain}.${domain}: ${response.status}`);
                 return null;
-            }
-            
-            const fileData = await response.json();
-            const content = atob(fileData.content);
-            const domainConfig = JSON.parse(content);
-            
-            // 添加注册时间（从GitHub commit获取）
-            const commitUrl = `https://api.github.com/repos/bestzwei/LibreDomains/commits?path=domains/${domainPath}/${subdomain}.json&per_page=1`;
+            }              const fileData = await response.json();
+            // 使用现代方法正确解码 UTF-8 编码的 Base64 内容，避免中文乱码
+            let content;
             try {
+                // 方法1：使用 TextDecoder (推荐，现代浏览器支持)
+                const binaryString = atob(fileData.content);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                content = new TextDecoder('utf-8').decode(bytes);
+            } catch (error) {
+                // 方法2：回退到传统方法
+                try {
+                    content = decodeURIComponent(escape(atob(fileData.content)));
+                } catch (fallbackError) {
+                    // 方法3：最后回退，直接解码（可能有中文问题）
+                    content = atob(fileData.content);
+                }
+            }
+            const domainData = JSON.parse(content);
+            
+            // 获取文件的创建和修改时间
+            try {
+                const commitUrl = `https://api.github.com/repos/bestzwei/LibreDomains/commits?path=domains/${domainPath}/${subdomain}.json&per_page=100`;
                 const commitResponse = await fetch(commitUrl, {
                     headers: {
                         'Accept': 'application/vnd.github.v3+json',
@@ -532,14 +620,52 @@ function initSubdomainChecker() {
                 if (commitResponse.ok) {
                     const commits = await commitResponse.json();
                     if (commits.length > 0) {
-                        domainConfig.registrationDate = commits[commits.length - 1].commit.author.date;
+                        // 最新提交（最后修改时间）
+                        domainData.lastModified = commits[0].commit.author.date;
+                        
+                        // 最早提交（注册时间）
+                        domainData.registrationDate = commits[commits.length - 1].commit.author.date;
+                        
+                        // 获取创建者信息（第一次提交的作者）
+                        const firstCommit = commits[commits.length - 1];
+                        domainData.creator = {
+                            name: firstCommit.commit.author.name,
+                            date: firstCommit.commit.author.date
+                        };
+                        
+                        // 如果有提交者的GitHub信息
+                        if (firstCommit.author) {
+                            domainData.creator.github = firstCommit.author.login;
+                        }
                     }
                 }
-            } catch (e) {
-                console.warn('获取注册时间失败:', e);
+            } catch (commitError) {
+                console.warn('获取提交历史失败:', commitError);
+                // 使用文件的最后修改时间作为备选
+                domainData.lastModified = fileData.sha ? new Date().toISOString() : null;
             }
             
-            return domainConfig;
+            // 验证和清理数据
+            if (domainData.owner) {
+                // 确保owner字段格式正确
+                if (typeof domainData.owner === 'string') {
+                    // 如果owner是字符串，转换为对象
+                    domainData.owner = { name: domainData.owner };
+                }
+                
+                // 清理GitHub用户名（移除@符号）
+                if (domainData.owner.github && domainData.owner.github.startsWith('@')) {
+                    domainData.owner.github = domainData.owner.github.substring(1);
+                }
+            }
+            
+            // 添加一些统计信息
+            if (domainData.records && Array.isArray(domainData.records)) {
+                domainData.recordCount = domainData.records.length;
+                domainData.recordTypes = [...new Set(domainData.records.map(r => r.type))];
+            }
+            
+            return domainData;
             
         } catch (error) {
             console.error('获取域名详细信息失败:', error);
@@ -579,9 +705,7 @@ function initSubdomainChecker() {
         setTimeout(() => {
             checkerResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
-    }
-
-    // 更新域名信息显示
+    }    // 更新域名信息显示
     function updateDomainInfo(type, domainData) {
         const domainName = document.getElementById('domainName');
         const domainStatus = document.getElementById('domainStatus');
@@ -592,28 +716,212 @@ function initSubdomainChecker() {
         const selectedDomain = domainSelect.value;
         const fullDomain = `${subdomain}.${selectedDomain}`;
 
-        domainName.textContent = fullDomain;
+        domainName.innerHTML = `
+            <span class="domain-text">${fullDomain}</span>
+            <button class="copy-domain-btn" onclick="copyToClipboard('${fullDomain}')" title="复制域名">📋</button>
+        `;
 
         if (type === 'available') {
             domainStatus.innerHTML = '<span class="availability-badge available">✅ 可申请</span>';
             registrationDate.textContent = '未注册';
             domainOwner.textContent = '无';
+            
+            // 隐藏扩展信息
+            hideExtendedInfo();
         } else if (type === 'unavailable' && domainData) {
             domainStatus.innerHTML = '<span class="availability-badge unavailable">❌ 已注册</span>';
             registrationDate.textContent = formatDate(domainData.registrationDate || '未知');
-            domainOwner.textContent = domainData.owner?.name || '未知';
+            
+            // 显示所有者信息
+            if (domainData.owner) {
+                const owner = domainData.owner;
+                let ownerText = owner.name || '未知';
+                
+                // 如果有GitHub用户名，添加链接
+                if (owner.github) {
+                    ownerText += ` (@${owner.github})`;
+                }
+                
+                domainOwner.innerHTML = ownerText;
+            } else {
+                domainOwner.textContent = '未知';
+            }
+            
+            // 显示扩展信息
+            showExtendedInfo(domainData);
         } else if (type === 'domain-paused') {
             domainStatus.innerHTML = '<span class="availability-badge unavailable">⏸️ 暂停开放</span>';
             registrationDate.textContent = '不适用';
             domainOwner.textContent = '不适用';
+            hideExtendedInfo();
         } else {
             domainStatus.innerHTML = '<span class="availability-badge unavailable">⚠️ 检测失败</span>';
             registrationDate.textContent = '未知';
             domainOwner.textContent = '未知';
+            hideExtendedInfo();
         }
+    }    // 显示扩展域名信息
+    function showExtendedInfo(domainData) {
+        const domainInfo = document.getElementById('domainInfo');
+        let existingExtended = domainInfo.querySelector('.extended-info');
+        
+        if (existingExtended) {
+            existingExtended.remove();
+        }
+
+        if (!domainData) return;
+
+        const extendedDiv = document.createElement('div');
+        extendedDiv.className = 'extended-info';
+        
+        let extendedHtml = '<h6>📝 详细信息</h6><div class="extended-grid">';
+        
+        // 描述信息
+        if (domainData.description) {
+            extendedHtml += `
+                <div class="extended-item">
+                    <span class="extended-label">用途描述</span>
+                    <span class="extended-value">${escapeHtml(domainData.description)}</span>
+                </div>
+            `;
+        }
+        
+        // 所有者详细信息
+        if (domainData.owner) {
+            const owner = domainData.owner;
+            
+            if (owner.github) {
+                extendedHtml += `
+                    <div class="extended-item">
+                        <span class="extended-label">GitHub 用户</span>
+                        <span class="extended-value">
+                            <a href="https://github.com/${escapeHtml(owner.github)}" 
+                               target="_blank" 
+                               class="github-link">
+                                @${escapeHtml(owner.github)} 🔗
+                            </a>
+                        </span>
+                    </div>
+                `;
+            }
+            
+            if (owner.email) {
+                const email = escapeHtml(owner.email);
+                extendedHtml += `
+                    <div class="extended-item">
+                        <span class="extended-label">联系邮箱</span>
+                        <span class="extended-value">
+                            <span class="email-masked" title="点击显示完整邮箱" onclick="toggleEmailMask(this, '${email}')">
+                                ${maskEmail(email)}
+                            </span>
+                        </span>
+                    </div>
+                `;
+            }
+        }
+        
+        // 创建者信息（如果与所有者不同）
+        if (domainData.creator && domainData.creator.github && 
+            domainData.creator.github !== domainData.owner?.github) {
+            extendedHtml += `
+                <div class="extended-item">
+                    <span class="extended-label">域名创建者</span>
+                    <span class="extended-value">
+                        <a href="https://github.com/${escapeHtml(domainData.creator.github)}" 
+                           target="_blank" 
+                           class="github-link">
+                            @${escapeHtml(domainData.creator.github)} 🔗
+                        </a>
+                    </span>
+                </div>
+            `;
+        }
+        
+        // DNS记录统计
+        if (domainData.records && domainData.records.length > 0) {
+            const recordTypes = [...new Set(domainData.records.map(r => r.type))];
+            const typeColors = {
+                'A': '#4CAF50',
+                'AAAA': '#2196F3', 
+                'CNAME': '#FF9800',
+                'TXT': '#9C27B0',
+                'MX': '#F44336'
+            };
+            
+            const typeTagsHtml = recordTypes.map(type => 
+                `<span class="record-type-tag" style="background-color: ${typeColors[type] || '#666'};">${type}</span>`
+            ).join(' ');
+            
+            extendedHtml += `
+                <div class="extended-item">
+                    <span class="extended-label">DNS 记录</span>
+                    <span class="extended-value">
+                        ${domainData.records.length} 条记录<br>
+                        <div class="record-types">${typeTagsHtml}</div>
+                    </span>
+                </div>
+            `;        }
+        
+        // 最后更新时间
+        if (domainData.lastModified) {
+            const lastModified = new Date(domainData.lastModified);
+            const now = new Date();
+            const diffDays = Math.floor((now - lastModified) / (1000 * 60 * 60 * 24));
+            let timeAgo = '';
+            
+            if (diffDays === 0) {
+                timeAgo = '今天';
+            } else if (diffDays === 1) {
+                timeAgo = '1天前';
+            } else if (diffDays < 30) {
+                timeAgo = `${diffDays}天前`;
+            } else if (diffDays < 365) {
+                timeAgo = `${Math.floor(diffDays / 30)}个月前`;
+            } else {
+                timeAgo = `${Math.floor(diffDays / 365)}年前`;
+            }
+            
+            extendedHtml += `
+                <div class="extended-item">
+                    <span class="extended-label">最后更新</span>
+                    <span class="extended-value">
+                        ${formatDate(domainData.lastModified)}
+                        <small style="display: block; color: var(--text-secondary);">(${timeAgo})</small>
+                    </span>
+                </div>
+            `;
+        }
+        
+        // 域名配置文件链接
+        const selectedDomain = document.getElementById('domainSelect').value;
+        const subdomain = document.getElementById('subdomainInput').value.toLowerCase().trim();
+        const configUrl = `https://github.com/bestzwei/LibreDomains/blob/main/domains/${selectedDomain}/${subdomain}.json`;
+        
+        extendedHtml += `
+            <div class="extended-item">
+                <span class="extended-label">配置文件</span>
+                <span class="extended-value">
+                    <a href="${configUrl}" target="_blank" class="github-link">
+                        查看完整配置 🔗
+                    </a>
+                </span>
+            </div>
+        `;
+        
+        extendedHtml += '</div>';
+        extendedDiv.innerHTML = extendedHtml;
+        
+        domainInfo.appendChild(extendedDiv);
     }
 
-    // 更新DNS记录显示
+    // 隐藏扩展信息
+    function hideExtendedInfo() {
+        const domainInfo = document.getElementById('domainInfo');
+        const existingExtended = domainInfo.querySelector('.extended-info');
+        if (existingExtended) {
+            existingExtended.remove();
+        }
+    }    // 更新DNS记录显示
     function updateDnsRecords(type, domainData) {
         const recordsList = document.getElementById('recordsList');
 
@@ -628,7 +936,11 @@ function initSubdomainChecker() {
         }
 
         if (domainData && domainData.records && domainData.records.length > 0) {
-            recordsList.innerHTML = domainData.records.map(record => `
+            const maxDisplayRecords = 5; // 最多显示5条记录
+            const totalRecords = domainData.records.length;
+            const displayRecords = domainData.records.slice(0, maxDisplayRecords);
+            
+            let recordsHtml = displayRecords.map(record => `
                 <div class="dns-record">
                     <div class="record-type ${record.type}">${record.type}</div>
                     <div class="record-name">${record.name || '@'}</div>
@@ -636,10 +948,28 @@ function initSubdomainChecker() {
                     <div class="record-ttl">${record.ttl || 3600}s</div>
                 </div>
             `).join('');
+            
+            // 如果有更多记录，显示统计信息
+            if (totalRecords > maxDisplayRecords) {
+                recordsHtml += `
+                    <div class="more-records-info">
+                        <span class="more-records-text">
+                            还有 ${totalRecords - maxDisplayRecords} 条记录未显示
+                        </span>
+                        <button class="show-all-records-btn" onclick="showAllRecords(event)">
+                            显示全部 ${totalRecords} 条记录
+                        </button>
+                    </div>
+                `;
+            }
+            
+            recordsList.innerHTML = recordsHtml;
+            
+            // 存储完整记录数据供后续使用
+            recordsList.setAttribute('data-all-records', JSON.stringify(domainData.records));
         } else {
             recordsList.innerHTML = '<p class="no-records">暂无DNS记录信息</p>';
-        }
-    }
+        }    }
 
     // 格式化日期
     function formatDate(dateString) {
@@ -829,13 +1159,86 @@ function initSubdomainChecker() {
                 }
             });
         });
-    }
-
-    // 初始化时触发域名选择事件
+    }    // 初始化时触发域名选择事件
     domainSelect.dispatchEvent(new Event('change'));
 
     // 减少自动刷新频率以避免API限制
     setInterval(() => loadRegisteredDomains(), 10 * 60 * 1000); // 10分钟
+}
+
+// 辅助函数：HTML转义
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 辅助函数：邮箱遮罩
+function maskEmail(email) {
+    if (!email || !email.includes('@')) return email;
+    const [local, domain] = email.split('@');
+    if (local.length <= 2) return email;
+    return local.substring(0, 2) + '***' + local.substring(local.length - 1) + '@' + domain;
+}
+
+// 辅助函数：切换邮箱显示
+function toggleEmailMask(element, fullEmail) {
+    if (element.textContent.includes('***')) {
+        element.textContent = fullEmail;
+        element.title = '点击隐藏邮箱';
+    } else {
+        element.textContent = maskEmail(fullEmail);
+        element.title = '点击显示完整邮箱';
+    }
+}
+
+// 辅助函数：复制到剪贴板
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        // 显示复制成功提示
+        showToast('✅ 已复制到剪贴板: ' + text);
+    }).catch(() => {
+        // 降级方案
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('✅ 已复制到剪贴板: ' + text);
+    });
+}
+
+// 辅助函数：显示提示消息
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease-out;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
 }
 
 // 禁用 Cloudflare RUM 相关错误
@@ -866,6 +1269,28 @@ additionalStyles.textContent = `
         100% { transform: scale(1); }
     }
     
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+    
     .fade-in {
         opacity: 1 !important;
         transform: translateY(0) !important;
@@ -878,6 +1303,137 @@ additionalStyles.textContent = `
     
     .feature-card:nth-child(even) {
         animation-delay: 0.2s;
+    }
+    
+    /* 域名详情相关样式 */
+    .domain-text {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+    }
+    
+    .copy-domain-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9em;
+        margin-left: 0.5rem;
+        padding: 0.25rem;
+        border-radius: var(--border-radius-sm);
+        transition: all 0.2s ease;
+        opacity: 0.7;
+    }
+    
+    .copy-domain-btn:hover {
+        opacity: 1;
+        background: var(--bg-light);
+        transform: scale(1.1);
+    }
+    
+    .extended-info {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--bg-light);
+        border-radius: var(--border-radius);
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    .extended-info h6 {
+        margin: 0 0 0.75rem 0;
+        color: var(--primary-color);
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+    
+    .extended-grid {
+        display: grid;
+        gap: 0.75rem;
+    }
+    
+    .extended-item {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 1rem;
+        align-items: start;
+    }
+    
+    .extended-label {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+    }
+    
+    .extended-value {
+        color: var(--text-color);
+        word-break: break-word;
+        font-size: 0.9em;
+    }
+    
+    .github-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .github-link:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+    
+    .email-masked {
+        cursor: pointer;
+        color: var(--primary-color);
+        font-family: 'Courier New', monospace;
+        font-size: 0.85em;
+        padding: 0.25rem 0.5rem;
+        background: var(--bg-white);
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--border-light);
+        transition: all 0.2s ease;
+    }
+    
+    .email-masked:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+      .toast-message {
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+    
+    .record-type-tag {
+        display: inline-block;
+        color: white;
+        font-size: 0.75em;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        margin: 0.1rem 0.2rem 0.1rem 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .record-types {
+        margin-top: 0.5rem;
+        line-height: 1.6;
+    }
+    
+    @media (max-width: 768px) {
+        .extended-item {
+            grid-template-columns: 1fr;
+            gap: 0.25rem;
+        }
+        
+        .extended-label {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .toast-message {
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
     }
 `;
 document.head.appendChild(additionalStyles);

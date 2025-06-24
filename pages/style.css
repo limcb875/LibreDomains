@@ -1764,3 +1764,72 @@ html {
 .fade-in {
     animation: fadeInUp 0.6s ease-out;
 }
+
+/* DNS 记录显示优化 */
+.more-records-info,
+.collapse-records-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: 8px;
+    margin-top: 0.75rem;
+    border: 1px solid var(--border-light);
+}
+
+.more-records-text {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.show-all-records-btn,
+.collapse-records-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--animation-duration) var(--animation-easing);
+}
+
+.show-all-records-btn:hover,
+.collapse-records-btn:hover {
+    background: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.show-all-records-btn:active,
+.collapse-records-btn:active {
+    transform: translateY(0);
+}
+
+/* DNS 记录容器滚动优化 */
+.dns-records #recordsList {
+    max-height: 600px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.dns-records #recordsList::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dns-records #recordsList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dns-records #recordsList::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 3px;
+}
+
+.dns-records #recordsList::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-muted);
+}
