@@ -1810,6 +1810,7 @@ html {
 }
 
 /* DNS 记录容器滚动优化 */
+/*
 .dns-records #recordsList {
     max-height: 600px;
     overflow-y: auto;
@@ -1833,3 +1834,4 @@ html {
 .dns-records #recordsList::-webkit-scrollbar-thumb:hover {
     background-color: var(--text-muted);
 }
+*/

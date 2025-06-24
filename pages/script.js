@@ -677,7 +677,6 @@ function initSubdomainChecker() {
         const resultTitle = checkerResult.querySelector('.result-title');
         const resultSubtitle = checkerResult.querySelector('.result-subtitle');
         const domainInfo = checkerResult.querySelector('#domainInfo');
-        const dnsRecords = checkerResult.querySelector('#dnsRecords');
 
         // 设置图标
         const icons = {
@@ -694,9 +693,6 @@ function initSubdomainChecker() {
 
         // 设置域名信息
         updateDomainInfo(type, domainData);
-        
-        // 设置DNS记录
-        updateDnsRecords(type, domainData);
 
         // 设置样式类
         checkerResult.className = `checker-result show ${type}`;
@@ -837,7 +833,7 @@ function initSubdomainChecker() {
             `;
         }
         
-        // DNS记录统计
+        // DNS记录详细信息（整合到这里）
         if (domainData.records && domainData.records.length > 0) {
             const recordTypes = [...new Set(domainData.records.map(r => r.type))];
             const typeColors = {
@@ -860,7 +856,54 @@ function initSubdomainChecker() {
                         <div class="record-types">${typeTagsHtml}</div>
                     </span>
                 </div>
-            `;        }
+            `;
+
+            // 添加详细的DNS记录列表
+            const maxDisplayRecords = 3; // 在扩展信息中显示3条
+            const displayRecords = domainData.records.slice(0, maxDisplayRecords);
+            const totalRecords = domainData.records.length;
+            
+            let recordsHtml = `
+                <div class="extended-item dns-records-section">
+                    <span class="extended-label">记录详情</span>
+                    <div class="extended-value">
+                        <div class="dns-records-compact">
+            `;
+            
+            displayRecords.forEach(record => {
+                recordsHtml += `
+                    <div class="dns-record-compact">
+                        <span class="record-type-mini ${record.type}">${record.type}</span>
+                        <span class="record-info">
+                            <strong>${record.name || '@'}</strong>
+                            <span class="record-arrow">→</span>
+                            <code>${record.content}</code>
+                        </span>
+                    </div>
+                `;
+            });
+            
+            if (totalRecords > maxDisplayRecords) {
+                recordsHtml += `
+                    <div class="more-records-compact">
+                        <button class="show-all-records-compact" onclick="showAllRecordsInExtended(event)">
+                            查看全部 ${totalRecords} 条记录
+                        </button>
+                    </div>
+                `;
+            }
+            
+            recordsHtml += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            extendedHtml += recordsHtml;
+            
+            // 存储完整记录数据
+            extendedDiv.setAttribute('data-all-records', JSON.stringify(domainData.records));
+        }
         
         // 最后更新时间
         if (domainData.lastModified) {
@@ -921,56 +964,30 @@ function initSubdomainChecker() {
         if (existingExtended) {
             existingExtended.remove();
         }
-    }    // 更新DNS记录显示
-    function updateDnsRecords(type, domainData) {
-        const recordsList = document.getElementById('recordsList');
-
-        if (type === 'available' || type === 'domain-paused') {
-            recordsList.innerHTML = '<p class="no-records">域名未注册，暂无DNS记录</p>';
-            return;
-        }
-
-        if (type === 'error') {
-            recordsList.innerHTML = '<p class="no-records">无法获取DNS记录信息</p>';
-            return;
-        }
-
-        if (domainData && domainData.records && domainData.records.length > 0) {
-            const maxDisplayRecords = 5; // 最多显示5条记录
-            const totalRecords = domainData.records.length;
-            const displayRecords = domainData.records.slice(0, maxDisplayRecords);
-            
-            let recordsHtml = displayRecords.map(record => `
-                <div class="dns-record">
-                    <div class="record-type ${record.type}">${record.type}</div>
-                    <div class="record-name">${record.name || '@'}</div>
-                    <div class="record-content">${record.content}</div>
-                    <div class="record-ttl">${record.ttl || 3600}s</div>
-                </div>
-            `).join('');
-            
-            // 如果有更多记录，显示统计信息
-            if (totalRecords > maxDisplayRecords) {
-                recordsHtml += `
-                    <div class="more-records-info">
-                        <span class="more-records-text">
-                            还有 ${totalRecords - maxDisplayRecords} 条记录未显示
-                        </span>
-                        <button class="show-all-records-btn" onclick="showAllRecords(event)">
-                            显示全部 ${totalRecords} 条记录
-                        </button>
-                    </div>
-                `;
-            }
-            
-            recordsList.innerHTML = recordsHtml;
-            
-            // 存储完整记录数据供后续使用
-            recordsList.setAttribute('data-all-records', JSON.stringify(domainData.records));
-        } else {
-            recordsList.innerHTML = '<p class="no-records">暂无DNS记录信息</p>';
-        }    }
-
+    }    // 更新DNS记录显示（简化版，因为已整合到扩展信息中）
+    // function updateDnsRecords(type, domainData) {
+    //     const recordsList = document.getElementById('recordsList');
+    //
+    //     if (type === 'available' || type === 'domain-paused') {
+    //         recordsList.innerHTML = '<p class="no-records">域名未注册，暂无DNS记录</p>';
+    //         return;
+    //     }
+    //
+    //     if (type === 'error') {
+    //         recordsList.innerHTML = '<p class="no-records">无法获取DNS记录信息</p>';
+    //         return;
+    //     }
+    //
+    //     if (domainData && domainData.records && domainData.records.length > 0) {
+    //         recordsList.innerHTML = `
+    //             <p class="records-summary">
+    //                 📋 共有 ${domainData.records.length} 条DNS记录，详细信息请查看上方详情
+    //             </p>
+    //         `;
+    //     } else {
+    //         recordsList.innerHTML = '<p class="no-records">暂无DNS记录信息</p>';
+    //     }
+    // }
     // 格式化日期
     function formatDate(dateString) {
         if (!dateString || dateString === '未知') return '未知';
@@ -993,6 +1010,12 @@ function initSubdomainChecker() {
         try {
             // 显示加载状态
             recentDomainsList.innerHTML = '<div class="loading">正在加载域名数据...</div>';
+            
+            // 更新hero统计加载状态
+            const heroTotalDomainsSpan = document.getElementById('heroTotalDomains');
+            if (heroTotalDomainsSpan) {
+                heroTotalDomainsSpan.textContent = '加载中...';
+            }
             
             for (const domain of domainsToLoad) {
                 const domainPath = domainConfig[domain]?.path || domain;
@@ -1061,6 +1084,27 @@ function initSubdomainChecker() {
             totalDomainsSpan.textContent = currentDomainSet.size;
         }
 
+        // 计算所有域名的总数（替代原来的重复统计）
+        const activeDomainsSpan = document.getElementById('activeDomains');
+        if (activeDomainsSpan) {
+            let totalAllDomains = 0;
+            registeredDomains.forEach((domainSet) => {
+                totalAllDomains += domainSet.size;
+            });
+            activeDomainsSpan.textContent = totalAllDomains;
+        }
+
+        // 更新hero区域的统计
+        const heroTotalDomainsSpan = document.getElementById('heroTotalDomains');
+        if (heroTotalDomainsSpan) {
+            // 计算所有域名的总数
+            let totalAllDomains = 0;
+            registeredDomains.forEach((domainSet) => {
+                totalAllDomains += domainSet.size;
+            });
+            heroTotalDomainsSpan.textContent = totalAllDomains;
+        }
+
         // 显示最近注册的域名
         const recentDomains = Array.from(currentDomainSet)
             .sort()
@@ -1101,6 +1145,12 @@ function initSubdomainChecker() {
                 `;
             }
 
+            // 设置备用统计数据
+            const heroTotalDomainsSpan = document.getElementById('heroTotalDomains');
+            if (heroTotalDomainsSpan) {
+                heroTotalDomainsSpan.textContent = '2+';
+            }
+
         } catch (backupError) {
             console.error('备用数据加载也失败:', backupError);
             if (recentDomainsList) {
@@ -1111,6 +1161,17 @@ function initSubdomainChecker() {
                                target="_blank" style="color: var(--primary-color);">查看完整域名列表</a>
                     </div>
                 `;
+            }
+            
+            // 设置错误状态的统计数据
+            const heroTotalDomainsSpan = document.getElementById('heroTotalDomains');
+            if (heroTotalDomainsSpan) {
+                heroTotalDomainsSpan.textContent = '?';
+            }
+            
+            const activeDomainsSpan = document.getElementById('activeDomains');
+            if (activeDomainsSpan) {
+                activeDomainsSpan.textContent = '?';
             }
         }
     }
@@ -1396,26 +1457,126 @@ additionalStyles.textContent = `
         background: var(--primary-color);
         color: white;
     }
-      .toast-message {
-        font-size: 0.9em;
-        font-weight: 500;
+    
+    /* 紧凑DNS记录样式 */
+    .dns-records-section {
+        grid-column: 1 / -1;
     }
     
-    .record-type-tag {
-        display: inline-block;
+    .dns-records-compact {
+        margin-top: 0.5rem;
+    }
+    
+    .dns-record-compact {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: var(--bg-white);
+        border: 1px solid var(--border-light);
+        border-radius: var(--border-radius-sm);
+        margin-bottom: 0.5rem;
+        transition: all var(--animation-duration) var(--animation-easing);
+    }
+    
+    .dns-record-compact:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .record-type-mini {
+        font-size: 0.7rem;
+        font-weight: 700;
         color: white;
-        font-size: 0.75em;
-        font-weight: 600;
-        padding: 0.2rem 0.5rem;
-        border-radius: 12px;
-        margin: 0.1rem 0.2rem 0.1rem 0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        min-width: 45px;
+        text-align: center;
+        flex-shrink: 0;
     }
     
-    .record-types {
-        margin-top: 0.5rem;
-        line-height: 1.6;
+    .record-type-mini.A { background: #4299e1; }
+    .record-type-mini.AAAA { background: #48bb78; }
+    .record-type-mini.CNAME { background: #ed8936; }
+    .record-type-mini.TXT { background: #9f7aea; }
+    .record-type-mini.MX { background: #f56565; }
+    
+    .record-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+        font-size: 0.85rem;
+        min-width: 0;
+    }
+    
+    .record-info strong {
+        color: var(--primary-color);
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    
+    .record-arrow {
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+    
+    .record-info code {
+        background: none;
+        padding: 0;
+        color: var(--text-color);
+        font-size: 0.8rem;
+        word-break: break-all;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .record-ttl {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+        flex-shrink: 0;
+    }
+    
+    .more-records-compact,
+    .collapse-records-compact {
+        text-align: center;
+        margin-top: 0.75rem;
+    }
+    
+    .show-all-records-compact,
+    .collapse-records-compact {
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--animation-duration) var(--animation-easing);
+    }
+    
+    .show-all-records-compact:hover,
+    .collapse-records-compact:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .records-summary {
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.925rem;
+        padding: 1.5rem;
+        background: var(--bg-light);
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--border-light);
+        font-style: italic;
     }
     
     @media (max-width: 768px) {
@@ -1434,6 +1595,115 @@ additionalStyles.textContent = `
             left: 10px;
             max-width: none;
         }
+        
+        .dns-records-section {
+            grid-column: 1;
+        }
+        
+        .dns-record-compact {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .record-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+            width: 100%;
+        }
+        
+        .record-info code {
+            word-break: break-all;
+        }
     }
 `;
 document.head.appendChild(additionalStyles);
+
+// 在扩展信息中显示全部DNS记录（全局函数）
+function showAllRecordsInExtended(event) {
+    event.preventDefault();
+    const button = event.target;
+    const extendedInfo = button.closest('.extended-info');
+    const allRecordsData = extendedInfo.getAttribute('data-all-records');
+    
+    if (!allRecordsData) return;
+    
+    try {
+        const allRecords = JSON.parse(allRecordsData);
+        const recordsContainer = button.closest('.dns-records-compact');
+        
+        let recordsHtml = '';
+        allRecords.forEach(record => {
+            recordsHtml += `
+                <div class="dns-record-compact">
+                    <span class="record-type-mini ${record.type}">${record.type}</span>
+                    <span class="record-info">
+                        <strong>${record.name || '@'}</strong>
+                        <span class="record-arrow">→</span>
+                        <code>${record.content}</code>
+                        <small class="record-ttl">(TTL: ${record.ttl || 3600}s)</small>
+                    </span>
+                </div>
+            `;
+        });
+        
+        recordsHtml += `
+            <div class="more-records-compact">
+                <button class="collapse-records-compact" onclick="collapseRecordsInExtended(event)">
+                    收起记录列表
+                </button>
+            </div>
+        `;
+        
+        recordsContainer.innerHTML = recordsHtml;
+    } catch (error) {
+        console.error('解析DNS记录数据失败:', error);
+    }
+}
+
+// 在扩展信息中收起DNS记录（全局函数）
+function collapseRecordsInExtended(event) {
+    event.preventDefault();
+    const button = event.target;
+    const extendedInfo = button.closest('.extended-info');
+    const allRecordsData = extendedInfo.getAttribute('data-all-records');
+    
+    if (!allRecordsData) return;
+    
+    try {
+        const allRecords = JSON.parse(allRecordsData);
+        const recordsContainer = button.closest('.dns-records-compact');
+        const maxDisplayRecords = 3;
+        const displayRecords = allRecords.slice(0, maxDisplayRecords);
+        const totalRecords = allRecords.length;
+        
+        let recordsHtml = '';
+        displayRecords.forEach(record => {
+            recordsHtml += `
+                <div class="dns-record-compact">
+                    <span class="record-type-mini ${record.type}">${record.type}</span>
+                    <span class="record-info">
+                        <strong>${record.name || '@'}</strong>
+                        <span class="record-arrow">→</span>
+                        <code>${record.content}</code>
+                    </span>
+                </div>
+            `;
+        });
+        
+        if (totalRecords > maxDisplayRecords) {
+            recordsHtml += `
+                <div class="more-records-compact">
+                    <button class="show-all-records-compact" onclick="showAllRecordsInExtended(event)">
+                        查看全部 ${totalRecords} 条记录
+                    </button>
+                </div>
+            `;
+        }
+        
+        recordsContainer.innerHTML = recordsHtml;
+    } catch (error) {
+        console.error('恢复DNS记录显示失败:', error);
+    }
+}
