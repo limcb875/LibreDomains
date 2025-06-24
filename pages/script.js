@@ -445,9 +445,7 @@ function initSubdomainChecker() {
         if (subdomain.startsWith('-') || subdomain.endsWith('-')) return '子域名不能以连字符开头或结尾';
         if (!/^[a-z0-9-]+$/.test(subdomain)) return '只能包含小写字母、数字和连字符';
         return '无效的子域名格式';
-    }
-
-    // 检测子域名可用性
+    }    // 检测子域名可用性
     async function checkSubdomain() {
         const subdomain = subdomainInput.value.toLowerCase().trim();
         const selectedDomain = domainSelect.value;
@@ -456,7 +454,7 @@ function initSubdomainChecker() {
         
         // 检查域名是否开放
         if (!domainConfig[selectedDomain]?.enabled) {
-            showResult('domain-paused', '域名暂停开放', `${selectedDomain} 域名暂时不开放申请`, '请选择其他域名');
+            showResult('domain-paused', '域名暂停开放', `${selectedDomain} 域名暂时不开放申请`);
             return;
         }
 
@@ -468,23 +466,25 @@ function initSubdomainChecker() {
         try {
             // 检查是否为保留域名
             if (reservedSubdomains.has(subdomain)) {
-                showResult('unavailable', '域名不可用', `"${subdomain}" 是系统保留域名，无法申请`, '保留域名');
+                showResult('unavailable', '域名不可用', `"${subdomain}" 是系统保留域名，无法申请`);
                 return;
             }
 
             // 检查是否已被注册
             const domainSet = registeredDomains.get(selectedDomain) || new Set();
             if (domainSet.has(subdomain)) {
-                showResult('unavailable', '域名不可用', `"${subdomain}.${selectedDomain}" 已被其他用户注册`, '已注册');
+                // 获取域名详细信息
+                const domainData = await getDomainDetails(subdomain, selectedDomain);
+                showResult('unavailable', '域名不可用', `"${subdomain}.${selectedDomain}" 已被其他用户注册`, domainData);
                 return;
             }
 
             // 域名可用
-            showResult('available', '域名可用！', `"${subdomain}.${selectedDomain}" 可以申请`, '');
+            showResult('available', '域名可用！', `"${subdomain}.${selectedDomain}" 可以申请`);
 
         } catch (error) {
             console.error('检测失败:', error);
-            showResult('error', '检测失败', '检测过程中出现错误，但域名可能仍然可用', '请手动确认');
+            showResult('error', '检测失败', '检测过程中出现错误，但域名可能仍然可用');
         } finally {
             // 恢复按钮状态
             setTimeout(() => {
@@ -496,11 +496,62 @@ function initSubdomainChecker() {
         }
     }
 
-    // 显示检测结果
-    function showResult(type, title, message, details) {
+    // 获取域名详细信息
+    async function getDomainDetails(subdomain, domain) {
+        try {
+            const domainPath = domainConfig[domain]?.path || domain;
+            const apiUrl = `https://api.github.com/repos/bestzwei/LibreDomains/contents/domains/${domainPath}/${subdomain}.json`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'LibreDomains-Checker/1.0'
+                },
+                cache: 'no-cache'
+            });
+            
+            if (!response.ok) {
+                return null;
+            }
+            
+            const fileData = await response.json();
+            const content = atob(fileData.content);
+            const domainConfig = JSON.parse(content);
+            
+            // 添加注册时间（从GitHub commit获取）
+            const commitUrl = `https://api.github.com/repos/bestzwei/LibreDomains/commits?path=domains/${domainPath}/${subdomain}.json&per_page=1`;
+            try {
+                const commitResponse = await fetch(commitUrl, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'LibreDomains-Checker/1.0'
+                    }
+                });
+                
+                if (commitResponse.ok) {
+                    const commits = await commitResponse.json();
+                    if (commits.length > 0) {
+                        domainConfig.registrationDate = commits[commits.length - 1].commit.author.date;
+                    }
+                }
+            } catch (e) {
+                console.warn('获取注册时间失败:', e);
+            }
+            
+            return domainConfig;
+            
+        } catch (error) {
+            console.error('获取域名详细信息失败:', error);
+            return null;
+        }
+    }// 显示检测结果
+    function showResult(type, title, message, domainData = null) {
         const resultIcon = checkerResult.querySelector('.result-icon');
-        const resultText = checkerResult.querySelector('.result-text');
-        const resultDetails = checkerResult.querySelector('.result-details');
+        const resultTitle = checkerResult.querySelector('.result-title');
+        const resultSubtitle = checkerResult.querySelector('.result-subtitle');
+        const domainInfo = checkerResult.querySelector('#domainInfo');
+        const dnsRecords = checkerResult.querySelector('#dnsRecords');
 
         // 设置图标
         const icons = {
@@ -511,14 +562,15 @@ function initSubdomainChecker() {
         };
         resultIcon.textContent = icons[type];
 
-        // 设置文本
-        resultText.innerHTML = `
-            <h4>${title}</h4>
-            <p>${message}</p>
-        `;
+        // 设置标题和副标题
+        resultTitle.textContent = title;
+        resultSubtitle.textContent = message;
 
-        // 设置详情
-        resultDetails.innerHTML = details || '';
+        // 设置域名信息
+        updateDomainInfo(type, domainData);
+        
+        // 设置DNS记录
+        updateDnsRecords(type, domainData);
 
         // 设置样式类
         checkerResult.className = `checker-result show ${type}`;
@@ -527,6 +579,81 @@ function initSubdomainChecker() {
         setTimeout(() => {
             checkerResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
+    }
+
+    // 更新域名信息显示
+    function updateDomainInfo(type, domainData) {
+        const domainName = document.getElementById('domainName');
+        const domainStatus = document.getElementById('domainStatus');
+        const registrationDate = document.getElementById('registrationDate');
+        const domainOwner = document.getElementById('domainOwner');
+
+        const subdomain = subdomainInput.value.toLowerCase().trim();
+        const selectedDomain = domainSelect.value;
+        const fullDomain = `${subdomain}.${selectedDomain}`;
+
+        domainName.textContent = fullDomain;
+
+        if (type === 'available') {
+            domainStatus.innerHTML = '<span class="availability-badge available">✅ 可申请</span>';
+            registrationDate.textContent = '未注册';
+            domainOwner.textContent = '无';
+        } else if (type === 'unavailable' && domainData) {
+            domainStatus.innerHTML = '<span class="availability-badge unavailable">❌ 已注册</span>';
+            registrationDate.textContent = formatDate(domainData.registrationDate || '未知');
+            domainOwner.textContent = domainData.owner?.name || '未知';
+        } else if (type === 'domain-paused') {
+            domainStatus.innerHTML = '<span class="availability-badge unavailable">⏸️ 暂停开放</span>';
+            registrationDate.textContent = '不适用';
+            domainOwner.textContent = '不适用';
+        } else {
+            domainStatus.innerHTML = '<span class="availability-badge unavailable">⚠️ 检测失败</span>';
+            registrationDate.textContent = '未知';
+            domainOwner.textContent = '未知';
+        }
+    }
+
+    // 更新DNS记录显示
+    function updateDnsRecords(type, domainData) {
+        const recordsList = document.getElementById('recordsList');
+
+        if (type === 'available' || type === 'domain-paused') {
+            recordsList.innerHTML = '<p class="no-records">域名未注册，暂无DNS记录</p>';
+            return;
+        }
+
+        if (type === 'error') {
+            recordsList.innerHTML = '<p class="no-records">无法获取DNS记录信息</p>';
+            return;
+        }
+
+        if (domainData && domainData.records && domainData.records.length > 0) {
+            recordsList.innerHTML = domainData.records.map(record => `
+                <div class="dns-record">
+                    <div class="record-type ${record.type}">${record.type}</div>
+                    <div class="record-name">${record.name || '@'}</div>
+                    <div class="record-content">${record.content}</div>
+                    <div class="record-ttl">${record.ttl || 3600}s</div>
+                </div>
+            `).join('');
+        } else {
+            recordsList.innerHTML = '<p class="no-records">暂无DNS记录信息</p>';
+        }
+    }
+
+    // 格式化日期
+    function formatDate(dateString) {
+        if (!dateString || dateString === '未知') return '未知';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        } catch (e) {
+            return dateString;
+        }
     }
 
     // 加载已注册的域名数据
