@@ -207,6 +207,12 @@ main {
     min-width: 280px;
 }
 
+.hero-stats .stat-number,
+.hero-stats .stat-label {
+    color: rgba(255,255,255,0.92);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
 .stat-item {
     text-align: center;
 }
@@ -1835,3 +1841,67 @@ html {
     background-color: var(--text-muted);
 }
 */
+
+/* Markdown style table for domainInfo */
+.md-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 0 0;
+    font-size: 0.98em;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.04);
+}
+
+.md-table th, .md-table td {
+    border: 1px solid var(--border-light);
+    padding: 0.65em 1em;
+    text-align: left;
+}
+
+.md-table th {
+    background: var(--bg-light);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.md-table tr:nth-child(even) {
+    background: var(--bg-light);
+}
+
+.md-table tr:hover td {
+    background: #f0f4ff;
+}
+
+.md-table td {
+    vertical-align: middle;
+    font-size: 0.98em;
+}
+
+.md-table .domain-text {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.md-table .copy-domain-btn {
+    margin-left: 0.5em;
+    font-size: 0.95em;
+    vertical-align: middle;
+}
+
+.md-table .email-masked {
+    margin-top: 0.2em;
+    display: inline-block;
+}
+
+.md-table .github-link {
+    margin-left: 0.2em;
+    font-size: 0.97em;
+}
+
+/* 移除特殊状态样式 */
+/* .md-table .availability-badge,
+.md-table .available,
+.md-table .unavailable { display: none; } */

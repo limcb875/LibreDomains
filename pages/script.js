@@ -707,59 +707,139 @@ function initSubdomainChecker() {
         const domainStatus = document.getElementById('domainStatus');
         const registrationDate = document.getElementById('registrationDate');
         const domainOwner = document.getElementById('domainOwner');
+        const domainInfo = document.getElementById('domainInfo');
 
         const subdomain = subdomainInput.value.toLowerCase().trim();
         const selectedDomain = domainSelect.value;
         const fullDomain = `${subdomain}.${selectedDomain}`;
 
-        domainName.innerHTML = `
-            <span class="domain-text">${fullDomain}</span>
-            <button class="copy-domain-btn" onclick="copyToClipboard('${fullDomain}')" title="复制域名">📋</button>
+        // 构建 markdown 风格表格
+        let tableRows = `
+            <tr>
+                <td>域名</td>
+                <td>
+                    <span class="domain-text">${fullDomain}</span>
+                    <button class="copy-domain-btn" onclick="copyToClipboard('${fullDomain}')" title="复制域名">复制</button>
+                </td>
+            </tr>
         `;
 
         if (type === 'available') {
-            domainStatus.innerHTML = '<span class="availability-badge available">✅ 可申请</span>';
-            registrationDate.textContent = '未注册';
-            domainOwner.textContent = '无';
-            
-            // 隐藏扩展信息
+            tableRows += `
+                <tr>
+                    <td>状态</td>
+                    <td>可申请</td>
+                </tr>
+                <tr>
+                    <td>注册时间</td>
+                    <td>未注册</td>
+                </tr>
+                <tr>
+                    <td>所有者</td>
+                    <td>无</td>
+                </tr>
+            `;
+            domainInfo.innerHTML = `
+                <h5>域名详情</h5>
+                <table class="md-table">${tableRows}</table>
+            `;
             hideExtendedInfo();
         } else if (type === 'unavailable' && domainData) {
-            domainStatus.innerHTML = '<span class="availability-badge unavailable">❌ 已注册</span>';
-            registrationDate.textContent = formatDate(domainData.registrationDate || '未知');
-            
-            // 显示所有者信息
+            // 所有者信息
+            let ownerText = '未知';
             if (domainData.owner) {
-                const owner = domainData.owner;
-                let ownerText = owner.name || '未知';
-                
-                // 如果有GitHub用户名，添加链接
-                if (owner.github) {
-                    ownerText += ` (@${owner.github})`;
+                ownerText = domainData.owner.name || '未知';
+                if (domainData.owner.github) {
+                    ownerText += ` (<a href="https://github.com/${escapeHtml(domainData.owner.github)}" target="_blank" class="github-link">${escapeHtml(domainData.owner.github)}</a>)`;
                 }
-                
-                domainOwner.innerHTML = ownerText;
-            } else {
-                domainOwner.textContent = '未知';
+                if (domainData.owner.email) {
+                    const email = escapeHtml(domainData.owner.email);
+                    ownerText += `<br><span class="email-masked" title="点击显示完整邮箱" onclick="toggleEmailMask(this, '${email}')">${maskEmail(email)}</span>`;
+                }
             }
-            
-            // 显示扩展信息
-            showExtendedInfo(domainData);
+            tableRows += `
+                <tr>
+                    <td>状态</td>
+                    <td>已注册</td>
+                </tr>
+                <tr>
+                    <td>注册时间</td>
+                    <td>${formatDate(domainData.registrationDate || '未知')}</td>
+                </tr>
+                <tr>
+                    <td>所有者</td>
+                    <td>${ownerText}</td>
+                </tr>
+            `;
+            // 扩展信息（如描述、记录数等）
+            let extraRows = '';
+            if (domainData.description) {
+                extraRows += `<tr><td>用途描述</td><td>${escapeHtml(domainData.description)}</td></tr>`;
+            }
+            if (domainData.records && domainData.records.length > 0) {
+                const recordTypes = [...new Set(domainData.records.map(r => r.type))];
+                extraRows += `<tr><td>DNS记录</td><td>${domainData.records.length} 条 (${recordTypes.join(', ')})</td></tr>`;
+            }
+            if (domainData.lastModified) {
+                extraRows += `<tr><td>最后更新</td><td>${formatDate(domainData.lastModified)}</td></tr>`;
+            }
+            // 配置文件链接
+            const configUrl = `https://github.com/bestzwei/LibreDomains/blob/main/domains/${selectedDomain}/${subdomain}.json`;
+            extraRows += `<tr><td>配置文件</td><td><a href="${configUrl}" target="_blank" class="github-link">查看完整配置</a></td></tr>`;
+
+            domainInfo.innerHTML = `
+                <h5>域名详情</h5>
+                <table class="md-table">
+                    ${tableRows}
+                    ${extraRows}
+                </table>
+            `;
+            hideExtendedInfo();
         } else if (type === 'domain-paused') {
-            domainStatus.innerHTML = '<span class="availability-badge unavailable">⏸️ 暂停开放</span>';
-            registrationDate.textContent = '不适用';
-            domainOwner.textContent = '不适用';
+            tableRows += `
+                <tr>
+                    <td>状态</td>
+                    <td>暂停开放</td>
+                </tr>
+                <tr>
+                    <td>注册时间</td>
+                    <td>不适用</td>
+                </tr>
+                <tr>
+                    <td>所有者</td>
+                    <td>不适用</td>
+                </tr>
+            `;
+            domainInfo.innerHTML = `
+                <h5>域名详情</h5>
+                <table class="md-table">${tableRows}</table>
+            `;
             hideExtendedInfo();
         } else {
-            domainStatus.innerHTML = '<span class="availability-badge unavailable">⚠️ 检测失败</span>';
-            registrationDate.textContent = '未知';
-            domainOwner.textContent = '未知';
+            tableRows += `
+                <tr>
+                    <td>状态</td>
+                    <td>检测失败</td>
+                </tr>
+                <tr>
+                    <td>注册时间</td>
+                    <td>未知</td>
+                </tr>
+                <tr>
+                    <td>所有者</td>
+                    <td>未知</td>
+                </tr>
+            `;
+            domainInfo.innerHTML = `
+                <h5>域名详情</h5>
+                <table class="md-table">${tableRows}</table>
+            `;
             hideExtendedInfo();
         }
     }    // 显示扩展域名信息
     function showExtendedInfo(domainData) {
         const domainInfo = document.getElementById('domainInfo');
-        let existingExtended = domainInfo.querySelector('.extended-info');
+        let existingExtended = domainInfo.querySelector('.extended-items');
         
         if (existingExtended) {
             existingExtended.remove();
@@ -768,9 +848,9 @@ function initSubdomainChecker() {
         if (!domainData) return;
 
         const extendedDiv = document.createElement('div');
-        extendedDiv.className = 'extended-info';
+        extendedDiv.className = 'extended-items animate-fade-in';
         
-        let extendedHtml = '<h6>📝 详细信息</h6><div class="extended-grid">';
+        let extendedHtml = '<div class="info-grid extended-grid">';
         
         // 描述信息
         if (domainData.description) {
@@ -794,7 +874,7 @@ function initSubdomainChecker() {
                             <a href="https://github.com/${escapeHtml(owner.github)}" 
                                target="_blank" 
                                class="github-link">
-                                @${escapeHtml(owner.github)} 🔗
+                                @${escapeHtml(owner.github)}
                             </a>
                         </span>
                     </div>
@@ -826,7 +906,7 @@ function initSubdomainChecker() {
                         <a href="https://github.com/${escapeHtml(domainData.creator.github)}" 
                            target="_blank" 
                            class="github-link">
-                            @${escapeHtml(domainData.creator.github)} 🔗
+                            @${escapeHtml(domainData.creator.github)}
                         </a>
                     </span>
                 </div>
@@ -945,7 +1025,7 @@ function initSubdomainChecker() {
                 <span class="extended-label">配置文件</span>
                 <span class="extended-value">
                     <a href="${configUrl}" target="_blank" class="github-link">
-                        查看完整配置 🔗
+                        查看完整配置
                     </a>
                 </span>
             </div>
@@ -954,7 +1034,15 @@ function initSubdomainChecker() {
         extendedHtml += '</div>';
         extendedDiv.innerHTML = extendedHtml;
         
-        domainInfo.appendChild(extendedDiv);
+        // 将扩展信息添加到domainInfo中，而不是作为单独的区域
+        const infoGrid = domainInfo.querySelector('.info-grid');
+        if (infoGrid) {
+            // 如果已有info-grid，则替换它
+            infoGrid.parentNode.replaceChild(extendedDiv.firstChild, infoGrid);
+        } else {
+            // 如果没有info-grid，则直接添加到domainInfo
+            domainInfo.appendChild(extendedDiv.firstChild);
+        }
     }
 
     // 隐藏扩展信息
@@ -1390,67 +1478,112 @@ additionalStyles.textContent = `
         transform: scale(1.1);
     }
     
-    .extended-info {
-        margin-top: 1rem;
-        padding: 1rem;
-        background: var(--bg-light);
-        border-radius: var(--border-radius);
-        border-left: 3px solid var(--primary-color);
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
-    .extended-info h6 {
-        margin: 0 0 0.75rem 0;
-        color: var(--primary-color);
-        font-size: 0.9em;
-        font-weight: 600;
+    .animate-fade-in {
+        animation: fadeIn 0.4s ease-out forwards;
     }
     
     .extended-grid {
         display: grid;
-        gap: 0.75rem;
+        gap: 1rem;
     }
     
+    /* 使extended-item样式与info-item一致 */
     .extended-item {
         display: grid;
         grid-template-columns: 1fr 2fr;
-        gap: 1rem;
-        align-items: start;
+        gap: 1.25rem;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: var(--border-radius-sm);
+        transition: all var(--animation-duration) var(--animation-easing);
     }
     
+    .extended-item:hover {
+        background: var(--bg-light);
+        box-shadow: var(--shadow-sm);
+        transform: translateX(2px);
+    }
+    
+    /* 使extended-label样式与info-label一致 */
     .extended-label {
         font-weight: 600;
-        color: var(--text-secondary);
-        font-size: 0.9em;
+        color: var(--text-light);
+        font-size: 0.925rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
     }
     
+    /* 使用emoji图标来标识不同类型的信息 */
+    .extended-item:nth-child(1) .extended-label::before {
+        content: '📄';
+        font-size: 1rem;
+    }
+    
+    .extended-item:nth-child(2) .extended-label::before {
+        content: '👤';
+        font-size: 1rem;
+    }
+    
+    .extended-item:nth-child(3) .extended-label::before {
+        content: '✉️';
+        font-size: 1rem;
+    }
+    
+    .extended-item:nth-child(4) .extended-label::before {
+        content: '🔧';
+        font-size: 1rem;
+    }
+    
+    /* 使extended-value样式与info-value一致 */
     .extended-value {
         color: var(--text-color);
         word-break: break-word;
-        font-size: 0.9em;
+        font-size: 0.925rem;
+        line-height: 1.5;
+        padding: 0.25rem 0;
     }
     
     .github-link {
         color: var(--primary-color);
         text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s ease;
+        font-weight: 600;
+        transition: all var(--animation-duration) var(--animation-easing);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
     }
     
     .github-link:hover {
-        color: var(--primary-dark);
-        text-decoration: underline;
+        color: var(--primary-light);
+    }
+    
+    .github-link::before {
+        content: '🔗';
+        font-size: 0.9rem;
     }
     
     .email-masked {
         cursor: pointer;
         color: var(--primary-color);
-        font-family: 'Courier New', monospace;
-        font-size: 0.85em;
-        padding: 0.25rem 0.5rem;
-        background: var(--bg-white);
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+        font-size: 0.9rem;
+        padding: 0.35rem 0.75rem;
+        background: var(--bg-light);
         border-radius: var(--border-radius-sm);
-        border: 1px solid var(--border-light);
-        transition: all 0.2s ease;
+        transition: all var(--animation-duration) var(--animation-easing);
+        display: inline-block;
+    }
+    
+    .email-masked:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
     }
     
     .email-masked:hover {
@@ -1616,6 +1749,47 @@ additionalStyles.textContent = `
         .record-info code {
             word-break: break-all;
         }
+    }
+
+    /* Markdown 表格样式 */
+    .md-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+    
+    .md-table th, .md-table td {
+        padding: 0.75rem;
+        text-align: left;
+        border: 1px solid var(--border-light);
+    }
+    
+    .md-table th {
+        background: var(--bg-light);
+        color: var(--text-light);
+        font-weight: 600;
+    }
+    
+    .md-table tr:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .md-table .availability-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .md-table .available {
+        background: #48bb78;
+        color: white;
+    }
+    
+    .md-table .unavailable {
+        background: #f56565;
+        color: white;
     }
 `;
 document.head.appendChild(additionalStyles);
