@@ -15,7 +15,7 @@
     },
     {
       "type": "CNAME",
-      "name": "d",
+      "name": "do",
       "content": "do-o33.pages.dev",
       "ttl": 3600,
       "proxied": true
