@@ -8,15 +8,8 @@
   "records": [
     {
       "type": "CNAME",
-      "name": "home",
+      "name": "@",
       "content": "waynenet.pages.dev",
-      "ttl": 3600,
-      "proxied": true
-    },
-    {
-      "type": "CNAME",
-      "name": "d",
-      "content": "do-o33.pages.dev",
       "ttl": 3600,
       "proxied": true
     },
