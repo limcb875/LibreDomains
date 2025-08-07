@@ -8,7 +8,7 @@
   "records": [
     {
       "type": "TXT",
-      "name": "_vercel",
+      "name": "@",
       "content": "vc-domain-verify=rydx.ciao.su,1b1ee27dd1c9ea850f52",
       "ttl": 3600,
       "proxied": false
