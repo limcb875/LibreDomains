@@ -1,0 +1,24 @@
+{
+  "description": "个人博客网站",
+  "owner": {
+    "name": "lxt",
+    "github": "limcb875",
+    "email": "3923448310@qq.com"
+  },
+  "records": [
+    {
+      "type": "A",
+      "name": "@",
+      "content": "xxx.xxx.xxx.xxx",
+      "ttl": 3600,
+      "proxied": false
+    },
+    {
+      "type": "CNAME",
+      "name": "www",
+      "content": "xxx.xxx",
+      "ttl": 3600,
+      "proxied": false
+    }
+  ]
+}
